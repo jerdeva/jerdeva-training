@@ -1,25 +1,38 @@
 :root {
-  --color-bg: #f6f2ea;
+  /* Active Emerald Palette (Apple Fitness Style) */
+  --color-bg: #f8fafc;
   --color-surface: #ffffff;
-  --color-text: #23272a;
-  --color-text-muted: #5f645f;
-  --color-primary: #1f5c43;
-  --color-primary-subtle: #e4efe8;
-  --color-border: #e6e0d4;
-  --color-input-border: #d9d2c3;
-  --color-warning-bg: #fbf0d9;
-  --color-warning-border: #ebcf8f;
-  /* есть в прототипе, в design-tokens.json его нет */
-  --color-warning-text: #7a4b00;
+  --color-surface-subtle: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-light: #10b981;
+  --color-primary-subtle: #ecfdf5;
+  --color-primary-border: #a7f3d0;
+
+  --color-border: #e2e8f0;
+  --color-input-border: #cbd5e1;
+
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-warning-text: #b45309;
+
+  --color-danger: #ef4444;
+  --color-danger-subtle: #fef2f2;
+  --color-danger-border: #fecaca;
 
   --radius-control: 12px;
-  --radius-card: 14px;
+  --radius-card: 16px;
+  --radius-pill: 9999px;
 
-  --font-sans: 'Manrope', system-ui, sans-serif;
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px -2px rgba(15, 23, 42, 0.05);
+  --shadow-hover: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 12px 24px -3px rgba(15, 23, 42, 0.09);
+  --shadow-btn: 0 2px 4px rgba(5, 150, 105, 0.2), 0 6px 14px rgba(5, 150, 105, 0.16);
+
+  --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
 
   color-scheme: light;
-  /* всегда светлая тема, без автопереключения на тёмную */
-    --color-danger: #b3261e;
 }
 
 *,
@@ -35,11 +48,14 @@ body {
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 1.4;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
 h2,
+h3,
 p,
 ul {
   margin: 0;
@@ -51,7 +67,8 @@ ul {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
   color: inherit;
 }
@@ -61,11 +78,12 @@ button {
 }
 
 button:disabled,
-input:disabled {
+input:disabled,
+select:disabled {
   cursor: not-allowed;
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-primary);
+  outline: 2px solid var(--color-primary-light);
   outline-offset: 2px;
 }

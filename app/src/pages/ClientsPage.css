@@ -1,400 +1,429 @@
 /* Телефон — базовые стили */
 .page {
-    --pad: 16px;
+  --pad: 16px;
 }
 
 .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .page__head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 14px;
-    padding: 20px var(--pad) 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 24px var(--pad) 14px;
 }
 
 .page__title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
 }
 
 .page__title h1 {
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
 }
 
 .count-pill {
-    padding: 5px 12px;
-    border-radius: 999px;
-    background: var(--color-primary-subtle);
-    color: var(--color-primary);
-    font-size: 14px;
-    font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .btn-primary {
-    flex: 1 1 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: 52px;
-    padding: 0 22px;
-    border: 0;
-    border-radius: var(--radius-control);
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    box-shadow: 0 1px 2px rgba(23, 74, 53, 0.35), 0 4px 10px rgba(23, 74, 53, 0.15);
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 50px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2), 0 6px 16px rgba(5, 150, 105, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(5, 150, 105, 0.25), 0 8px 20px rgba(5, 150, 105, 0.3);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn-primary:disabled {
-    opacity: 0.5;
-    box-shadow: none;
+  opacity: 0.5;
+  box-shadow: none;
 }
 
 .controls {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 0 var(--pad) 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 var(--pad) 16px;
 }
 
 .search {
-    position: relative;
-    display: block;
-    flex: 1;
+  position: relative;
+  display: block;
+  flex: 1;
 }
 
 .search__icon {
-    position: absolute;
-    left: 14px;
-    top: 14px;
-    color: var(--color-text-muted);
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  color: var(--color-text-muted);
 }
 
 .search__input {
-    width: 100%;
-    height: 48px;
-    padding: 0 14px 0 42px;
-    border: 1px solid var(--color-input-border);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-    font-weight: 500;
+  width: 100%;
+  height: 48px;
+  padding: 0 14px 0 42px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search__input:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
 .search__input:disabled {
-    opacity: 0.6;
+  opacity: 0.6;
 }
 
+/* Apple-style Segmented Control */
 .segmented {
-    display: flex;
-    gap: 4px;
-    padding: 4px;
-    border: 1px solid var(--color-input-border);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-   
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
 }
 
 .segmented__btn {
-    flex: 1;
-    height: 40px;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 9px;
-    background: transparent;
-    color: #4a4f4b;
-    font-size: 14px;
-    font-weight: 700;
+  flex: 1;
+  height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s ease;
 }
 
 .segmented__btn[aria-pressed='true'] {
-    background: var(--color-primary);
-    color: #fff;
+  background: #ffffff;
+  color: var(--color-text);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
 }
 
 .clients-head {
-    display: none;
+  display: none;
 }
 
 .clients {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 0 var(--pad) 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 var(--pad) 8px;
 }
 
 .clients-foot {
-    padding: 4px var(--pad) 16px;
-    font-size: 13px;
-    color: var(--color-text-muted);
+  padding: 8px var(--pad) 20px;
+  font-size: 13px;
+  color: var(--color-text-muted);
 }
 
-/* Строка клиента: на телефоне — карточка */
+/* Карточка клиента */
 .client {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px 16px;
-    padding: 16px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    box-shadow: 0 1px 2px rgba(35, 39, 42, 0.05);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+  padding: 16px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.client:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-hover);
 }
 
 .client__who {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .client__who-text {
-    min-width: 0;
+  min-width: 0;
 }
 
 .client__avatar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--color-primary-subtle);
-    color: var(--color-primary);
-    font-size: 15px;
-    font-weight: 800;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .client__name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 16px;
-    font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
 }
 
 .client__contact {
-    margin-top: 2px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 13px;
-    color: var(--color-text-muted);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--color-text-muted);
 }
 
 .tag {
-    margin-left: 8px;
-    padding: 2px 7px;
-    border-radius: 6px;
-    background: #f0ece2;
-    color: var(--color-text-muted);
-    font-size: 12px;
-    font-weight: 600;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
 }
 
-/* Порядок на телефоне: Ціна | Найближче, затем Залишок во всю ширину */
 .client__cell--price {
-    order: 1;
+  order: 1;
 }
 
 .client__cell--next {
-    order: 2;
+  order: 2;
 }
 
 .client__cell--left {
-    order: 3;
-    grid-column: 1 / -1;
+  order: 3;
+  grid-column: 1 / -1;
 }
 
 .client__label {
-    display: block;
-    margin-bottom: 3px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--color-text-muted);
+  display: block;
+  margin-bottom: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
 .client__value {
-    font-size: 14px;
-    font-weight: 500;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
 }
 
 .client__value--strong {
-    font-size: 15px;
-    font-weight: 700;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .client__value--muted {
-    color: var(--color-text-muted);
+  color: var(--color-text-muted);
 }
 
 .client__balance {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .badge-warning {
-    padding: 3px 9px;
-    border: 1px solid var(--color-warning-border);
-    border-radius: 999px;
-    background: var(--color-warning-bg);
-    color: var(--color-warning-text);
-    font-size: 12px;
-    font-weight: 700;
+  padding: 3px 9px;
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-/* Компьютер: та же разметка, но строки-таблица */
+/* Компьютерная таблица */
 @media (min-width: 768px) {
-    .page {
-        --pad: 40px;
-        --client-columns: minmax(0, 1.7fr) 120px 220px 180px;
-    }
+  .page {
+    --pad: 40px;
+    --client-columns: minmax(0, 1.8fr) 130px 220px 180px;
+  }
 
-    .page__head {
-        padding-top: 36px;
-        padding-bottom: 20px;
-    }
+  .page__head {
+    padding-top: 36px;
+    padding-bottom: 24px;
+  }
 
-    .page__title h1 {
-        font-size: 34px;
-    }
+  .page__title h1 {
+    font-size: 32px;
+  }
 
-    .btn-primary {
-        flex: none;
-        height: 48px;
-    }
+  .btn-primary {
+    flex: none;
+    height: 46px;
+  }
 
-    .controls {
-        flex-direction: row;
-        padding-bottom: 20px;
-    }
+  .controls {
+    flex-direction: row;
+    padding-bottom: 20px;
+  }
 
-    .segmented__btn {
-        height: 40px;
-    }
+  .clients-head {
+    display: grid;
+    grid-template-columns: var(--client-columns);
+    gap: 16px;
+    padding: 0 calc(var(--pad) + 20px) 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
 
-    .clients-head {
-        display: grid;
-        grid-template-columns: var(--client-columns);
-        gap: 16px;
-        padding: 0 calc(var(--pad) + 21px) 8px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: var(--color-text-muted);
-    }
+  .client {
+    grid-template-columns: var(--client-columns);
+    align-items: center;
+    gap: 16px;
+    min-height: 72px;
+    padding: 14px 20px;
+  }
 
-    .client {
-        grid-template-columns: var(--client-columns);
-        align-items: center;
-        gap: 16px;
-        min-height: 72px;
-        padding: 14px 20px;
-    }
+  .client__who {
+    grid-column: auto;
+  }
 
-    .client__who {
-        grid-column: auto;
-    }
+  .client__cell--price,
+  .client__cell--next,
+  .client__cell--left {
+    order: 0;
+    grid-column: auto;
+  }
 
-    .client__cell--price,
-    .client__cell--next,
-    .client__cell--left {
-        order: 0;
-        grid-column: auto;
-    }
+  .client__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 
-    /* Подписи нужны только на телефоне, но скринридеру они остаются */
-    .client__label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        margin: 0;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
+  .clients {
+    gap: 10px;
+    padding-bottom: 12px;
+  }
 
-    .clients {
-        gap: 8px;
-        padding-bottom: 8px;
-    }
-
-    .clients-foot {
-        padding-bottom: 32px;
-    }
+  .clients-foot {
+    padding-bottom: 36px;
+  }
 }
 
 .empty {
-    margin: 0 var(--pad) 8px;
-    padding: 56px 16px;
-    text-align: center;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
+  margin: 0 var(--pad) 8px;
+  padding: 56px 16px;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-card);
 }
 
 .empty__title {
-    font-size: 18px;
-    font-weight: 800;
+  font-size: 18px;
+  font-weight: 800;
 }
 
 .empty__text {
-    margin: 6px 0 18px;
-    font-size: 14px;
-    color: var(--color-text-muted);
+  margin: 6px 0 20px;
+  font-size: 14px;
+  color: var(--color-text-muted);
 }
 
 .btn-secondary {
-    height: 44px;
-    padding: 0 20px;
-    border: 1px solid var(--color-primary);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-primary);
-    font-size: 14px;
-    font-weight: 700;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface-subtle);
+  border-color: #cbd5e1;
 }
 
 .client__delete {
-    display: inline-flex;
-    align-items: center;
-    min-height: 36px;
-    margin-top: 4px;
-    padding: 0 4px;
-    border: 0;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--color-danger, #b3261e);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin-top: 4px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-danger);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .client__delete:hover {
-    text-decoration: underline;
-}
-
-.client__delete:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
+  text-decoration: underline;
 }
