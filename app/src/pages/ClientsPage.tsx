@@ -35,9 +35,11 @@ function getInitials(name: string): string {
 function ClientRow({
   client,
   onDelete,
+  onOpenSchedule,
 }: {
   client: Client
   onDelete: (client: Client) => void
+  onOpenSchedule?: () => void
 }) {
   const isLow = client.sessionsLeft <= LOW_BALANCE_LIMIT
   const sessionsWord = pluralUk(client.sessionsLeft, ['заняття', 'заняття', 'занять'])
@@ -86,18 +88,49 @@ function ClientRow({
 
       <div className="client__cell client__cell--next">
         <span className="client__label">Найближче заняття</span>
-        <span
-          className={client.nextSessionLabel ? 'client__value' : 'client__value client__value--muted'}
-        >
-          {client.nextSessionLabel ?? 'Не заплановано'}
-        </span>
+        {client.nextSessionLabel ? (
+          <button
+            type="button"
+            className="client__value"
+            style={{
+              background: 'transparent',
+              border: 0,
+              padding: 0,
+              textAlign: 'left',
+              color: 'var(--color-primary)',
+              fontWeight: 700,
+              textDecoration: 'underline',
+              cursor: onOpenSchedule ? 'pointer' : 'default',
+            }}
+            onClick={onOpenSchedule}
+            title="Перейти в розклад"
+          >
+            {client.nextSessionLabel}
+          </button>
+        ) : (
+          <span className="client__value client__value--muted">
+            Не заплановано
+          </span>
+        )}
       </div>
     </li>
   )
 }
 
-export default function ClientsPage() {
-  const [clients, setClients] = useState<Client[]>(() => {
+type Props = {
+  clients?: Client[]
+  onAddClient?: (values: ClientFormValues) => void
+  onDeleteClient?: (client: Client) => void
+  onNavigateToSchedule?: () => void
+}
+
+export default function ClientsPage({
+  clients: propClients,
+  onAddClient: propAddClient,
+  onDeleteClient: propDeleteClient,
+  onNavigateToSchedule,
+}: Props = {}) {
+  const [internalClients, setInternalClients] = useState<Client[]>(() => {
     try {
       const saved = localStorage.getItem(CLIENTS_STORAGE_KEY)
       if (saved) {
@@ -105,16 +138,19 @@ export default function ClientsPage() {
         if (Array.isArray(parsed)) return parsed as Client[]
       }
     } catch {
-      // Игнорируем ошибку чтения кэша
+      // ignore
     }
     return initialClients
   })
 
+  const clients = propClients ?? internalClients
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<StatusFilter>('all')
 
   const loadClients = useCallback(async () => {
+    if (propClients) return // управляется снаружи
+
     try {
       const { data, error } = await supabase
         .from('clients')
@@ -128,18 +164,18 @@ export default function ClientsPage() {
 
       if (data && data.length > 0) {
         const mapped = (data as DatabaseClient[]).map(fromDbClient)
-        setClients(mapped)
+        setInternalClients(mapped)
         localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(mapped))
       }
     } catch (err) {
       console.error('Не вдалося зʼєднатися з базою:', err)
     }
-  }, [])
+  }, [propClients])
 
   useEffect(() => {
+    if (propClients) return
     loadClients()
 
-    // Слушаем изменения в базе в реальном времени
     const channel = supabase
       .channel('realtime-clients')
       .on(
@@ -154,7 +190,7 @@ export default function ClientsPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [loadClients])
+  }, [loadClients, propClients])
 
   const total = clients.length
   const normalizedQuery = query.trim().toLowerCase()
@@ -169,7 +205,14 @@ export default function ClientsPage() {
     setFilter('all')
   }
 
-  async function addClient(values: ClientFormValues) {
+  async function handleAddClient(values: ClientFormValues) {
+    if (propAddClient) {
+      propAddClient(values)
+      resetFilters()
+      setIsFormOpen(false)
+      return
+    }
+
     const newClient: Client = {
       id: crypto.randomUUID(),
       ...values,
@@ -177,8 +220,7 @@ export default function ClientsPage() {
       status: 'active',
     }
 
-    // Мгновенно отображаем в интерфейсе
-    setClients((current) => [newClient, ...current])
+    setInternalClients((current) => [newClient, ...current])
     resetFilters()
     setIsFormOpen(false)
 
@@ -192,7 +234,7 @@ export default function ClientsPage() {
         alert('Не вдалося зберегти в базу: ' + error.message)
         loadClients()
       } else {
-        setClients((current) => {
+        setInternalClients((current) => {
           localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(current))
           return current
         })
@@ -202,13 +244,18 @@ export default function ClientsPage() {
     }
   }
 
-  async function deleteClient(clientToDelete: Client) {
+  async function handleDeleteClient(clientToDelete: Client) {
+    if (propDeleteClient) {
+      propDeleteClient(clientToDelete)
+      return
+    }
+
     const confirmed = window.confirm(
       `Видалити клієнта «${clientToDelete.name}»?`,
     )
     if (!confirmed) return
 
-    setClients((current) =>
+    setInternalClients((current) =>
       current.filter((client) => client.id !== clientToDelete.id),
     )
 
@@ -223,7 +270,7 @@ export default function ClientsPage() {
         alert('Не вдалося видалити з бази: ' + error.message)
         loadClients()
       } else {
-        setClients((current) => {
+        setInternalClients((current) => {
           localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(current))
           return current
         })
@@ -295,7 +342,8 @@ export default function ClientsPage() {
               <ClientRow
                 key={client.id}
                 client={client}
-                onDelete={deleteClient}
+                onDelete={handleDeleteClient}
+                onOpenSchedule={onNavigateToSchedule}
               />
             ))}
           </ul>
@@ -314,7 +362,7 @@ export default function ClientsPage() {
         Показано {visible.length} з {total}
       </p>
 
-      {isFormOpen && <ClientForm onSave={addClient} onCancel={() => setIsFormOpen(false)} />}
+      {isFormOpen && <ClientForm onSave={handleAddClient} onCancel={() => setIsFormOpen(false)} />}
     </div>
   )
 }

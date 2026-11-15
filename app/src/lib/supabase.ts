@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Client } from '../types'
+import type { Client, Session, SessionStatus } from '../types'
 
 const supabaseUrl =
   import.meta.env.VITE_SUPABASE_URL || 'https://vsrwzkortlocxrzzhwsa.supabase.co'
@@ -41,5 +41,37 @@ export function toDbClient(client: Partial<Client>) {
   if (client.sessionsLeft !== undefined) row.sessions_left = client.sessionsLeft
   if (client.nextSessionLabel !== undefined) row.next_session_label = client.nextSessionLabel
   if (client.status !== undefined) row.status = client.status
+  return row
+}
+
+export type DatabaseSession = {
+  id: string
+  client_id: string
+  date: string
+  time: string
+  dur: number
+  status: SessionStatus
+  created_at?: string
+}
+
+export function fromDbSession(db: DatabaseSession): Session {
+  return {
+    id: db.id,
+    clientId: db.client_id,
+    date: db.date,
+    time: db.time,
+    dur: Number(db.dur ?? 60),
+    status: db.status || 'planned',
+  }
+}
+
+export function toDbSession(session: Partial<Session>) {
+  const row: Record<string, unknown> = {}
+  if (session.id !== undefined) row.id = session.id
+  if (session.clientId !== undefined) row.client_id = session.clientId
+  if (session.date !== undefined) row.date = session.date
+  if (session.time !== undefined) row.time = session.time
+  if (session.dur !== undefined) row.dur = session.dur
+  if (session.status !== undefined) row.status = session.status
   return row
 }

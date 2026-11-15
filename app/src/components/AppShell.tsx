@@ -37,7 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     id: 'schedule',
     label: 'Розклад',
-    available: false,
+    available: true,
     icon: (
       <svg {...iconProps}>
         <rect x="4" y="5" width="16" height="15" rx="2" />
@@ -58,7 +58,15 @@ const NAV_ITEMS: NavItem[] = [
   },
 ]
 
-function NavList({ active, variant }: { active: NavId; variant: 'side' | 'bottom' }) {
+function NavList({
+  active,
+  variant,
+  onSelect,
+}: {
+  active: NavId
+  variant: 'side' | 'bottom'
+  onSelect?: (id: NavId) => void
+}) {
   return (
     <nav className={`nav nav--${variant}`} aria-label="Основна навігація">
       {NAV_ITEMS.map((item) => (
@@ -69,6 +77,11 @@ function NavList({ active, variant }: { active: NavId; variant: 'side' | 'bottom
           disabled={!item.available}
           aria-current={item.id === active ? 'page' : undefined}
           title={item.available ? undefined : 'Розділ буде доступний пізніше'}
+          onClick={() => {
+            if (item.available && onSelect) {
+              onSelect(item.id)
+            }
+          }}
         >
           {item.icon}
           <span className="nav__label">{item.label}</span>
@@ -79,24 +92,38 @@ function NavList({ active, variant }: { active: NavId; variant: 'side' | 'bottom
   )
 }
 
-export default function AppShell({ active, children }: { active: NavId; children: ReactNode }) {
+export default function AppShell({
+  active,
+  onSelect,
+  children,
+}: {
+  active: NavId
+  onSelect?: (id: NavId) => void
+  children: ReactNode
+}) {
   return (
     <div className="shell">
       <aside className="shell__sidebar">
-        <div className="brand">
+        <button
+          type="button"
+          className="brand"
+          style={{ background: 'transparent', border: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}
+          onClick={() => onSelect?.('clients')}
+          title="Повернутися на головну (Клієнти)"
+        >
           <span className="brand__mark">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12" />
             </svg>
           </span>
           <span className="brand__name">Кабінет тренера</span>
-        </div>
-        <NavList active={active} variant="side" />
+        </button>
+        <NavList active={active} variant="side" onSelect={onSelect} />
       </aside>
 
       <main className="shell__main">{children}</main>
 
-      <NavList active={active} variant="bottom" />
+      <NavList active={active} variant="bottom" onSelect={onSelect} />
     </div>
   )
 }
