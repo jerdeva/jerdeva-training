@@ -1,0 +1,39 @@
+{
+  "source": "Values extracted from the uploaded Claude Design prototype; reference, not a build configuration.",
+  "fontFamily": "Manrope, system-ui, sans-serif",
+  "colors": {
+    "background": "#F6F2EA",
+    "surface": "#FFFFFF",
+    "text": "#23272A",
+    "textMuted": "#5F645F",
+    "primary": "#1F5C43",
+    "primarySubtle": "#E4EFE8",
+    "border": "#E6E0D4",
+    "inputBorder": "#D9D2C3",
+    "warningBackground": "#FBF0D9",
+    "warningText": "#7A4B00",
+    "dangerBackground": "#FDECEA",
+    "dangerText": "#8C1D18"
+  },
+  "radiusPx": {
+    "control": 12,
+    "card": 14,
+    "mobilePanelTop": 20
+  },
+  "referenceViewports": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "layoutReferencePx": {
+    "sidebarWidth": 248,
+    "desktopContentPadding": 40,
+    "mobileContentPadding": 16,
+    "desktopPanelWidth": 440
+  }
+}

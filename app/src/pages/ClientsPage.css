@@ -1,0 +1,400 @@
+/* Телефон — базовые стили */
+.page {
+    --pad: 16px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.page__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    padding: 20px var(--pad) 12px;
+}
+
+.page__title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1 1 auto;
+}
+
+.page__title h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.count-pill {
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.btn-primary {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 52px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(23, 74, 53, 0.35), 0 4px 10px rgba(23, 74, 53, 0.15);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    box-shadow: none;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 var(--pad) 12px;
+}
+
+.search {
+    position: relative;
+    display: block;
+    flex: 1;
+}
+
+.search__icon {
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    color: var(--color-text-muted);
+}
+
+.search__input {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px 0 42px;
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    font-weight: 500;
+}
+
+.search__input:disabled {
+    opacity: 0.6;
+}
+
+.segmented {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+   
+}
+
+.segmented__btn {
+    flex: 1;
+    height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #4a4f4b;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.segmented__btn[aria-pressed='true'] {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.clients-head {
+    display: none;
+}
+
+.clients {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 var(--pad) 8px;
+}
+
+.clients-foot {
+    padding: 4px var(--pad) 16px;
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+/* Строка клиента: на телефоне — карточка */
+.client {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
+    padding: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: 0 1px 2px rgba(35, 39, 42, 0.05);
+}
+
+.client__who {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.client__who-text {
+    min-width: 0;
+}
+
+.client__avatar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.client__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.client__contact {
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.tag {
+    margin-left: 8px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: #f0ece2;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Порядок на телефоне: Ціна | Найближче, затем Залишок во всю ширину */
+.client__cell--price {
+    order: 1;
+}
+
+.client__cell--next {
+    order: 2;
+}
+
+.client__cell--left {
+    order: 3;
+    grid-column: 1 / -1;
+}
+
+.client__label {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.client__value {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.client__value--strong {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.client__value--muted {
+    color: var(--color-text-muted);
+}
+
+.client__balance {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.badge-warning {
+    padding: 3px 9px;
+    border: 1px solid var(--color-warning-border);
+    border-radius: 999px;
+    background: var(--color-warning-bg);
+    color: var(--color-warning-text);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Компьютер: та же разметка, но строки-таблица */
+@media (min-width: 768px) {
+    .page {
+        --pad: 40px;
+        --client-columns: minmax(0, 1.7fr) 120px 220px 180px;
+    }
+
+    .page__head {
+        padding-top: 36px;
+        padding-bottom: 20px;
+    }
+
+    .page__title h1 {
+        font-size: 34px;
+    }
+
+    .btn-primary {
+        flex: none;
+        height: 48px;
+    }
+
+    .controls {
+        flex-direction: row;
+        padding-bottom: 20px;
+    }
+
+    .segmented__btn {
+        height: 40px;
+    }
+
+    .clients-head {
+        display: grid;
+        grid-template-columns: var(--client-columns);
+        gap: 16px;
+        padding: 0 calc(var(--pad) + 21px) 8px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+    }
+
+    .client {
+        grid-template-columns: var(--client-columns);
+        align-items: center;
+        gap: 16px;
+        min-height: 72px;
+        padding: 14px 20px;
+    }
+
+    .client__who {
+        grid-column: auto;
+    }
+
+    .client__cell--price,
+    .client__cell--next,
+    .client__cell--left {
+        order: 0;
+        grid-column: auto;
+    }
+
+    /* Подписи нужны только на телефоне, но скринридеру они остаются */
+    .client__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .clients {
+        gap: 8px;
+        padding-bottom: 8px;
+    }
+
+    .clients-foot {
+        padding-bottom: 32px;
+    }
+}
+
+.empty {
+    margin: 0 var(--pad) 8px;
+    padding: 56px 16px;
+    text-align: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+}
+
+.empty__title {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.empty__text {
+    margin: 6px 0 18px;
+    font-size: 14px;
+    color: var(--color-text-muted);
+}
+
+.btn-secondary {
+    height: 44px;
+    padding: 0 20px;
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.client__delete {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    margin-top: 4px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-danger, #b3261e);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.client__delete:hover {
+    text-decoration: underline;
+}
+
+.client__delete:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
