@@ -1,11 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import ClientForm from '../components/ClientForm'
 import type { ClientFormValues } from '../components/ClientForm'
 import { clients as initialClients } from '../data/clients'
 import { pluralUk } from '../data/plural'
 import type { Client } from '../types'
 import './ClientsPage.css'
-import { useEffect } from 'react'
+import {
+  supabase,
+  fromDbClient,
+  toDbClient,
+  type DatabaseClient,
+} from '../lib/supabase'
 
 const LOW_BALANCE_LIMIT = 2
 const CLIENTS_STORAGE_KEY = 'trainer-desk-clients-v1'
@@ -50,13 +55,13 @@ function ClientRow({
           </div>
           <div className="client__contact">{client.contact || 'Контакт не вказано'}</div>
           <button
-  type="button"
-  className="client__delete"
-  onClick={() => onDelete(client)}
-  aria-label={`Видалити клієнта ${client.name}`}
->
-  Видалити
-</button>
+            type="button"
+            className="client__delete"
+            onClick={() => onDelete(client)}
+            aria-label={`Видалити клієнта ${client.name}`}
+          >
+            Видалити
+          </button>
         </div>
       </div>
 
@@ -93,47 +98,64 @@ function ClientRow({
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>(() => {
-  try {
-    const saved = localStorage.getItem(CLIENTS_STORAGE_KEY)
-
-    // При первом открытии используем список из clients.ts.
-    if (saved === null) return initialClients
-
-    const parsed: unknown = JSON.parse(saved)
-
-    if (!Array.isArray(parsed)) {
-      throw new Error('Збережений список клієнтів має неправильний формат')
+    try {
+      const saved = localStorage.getItem(CLIENTS_STORAGE_KEY)
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved)
+        if (Array.isArray(parsed)) return parsed as Client[]
+      }
+    } catch {
+      // Игнорируем ошибку чтения кэша
     }
-
-    return parsed as Client[]
-  } catch (error) {
-    console.error('Не вдалося завантажити клієнтів:', error)
     return initialClients
-  }
-})
+  })
+
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<StatusFilter>('all')
-useEffect(() => {
-  try {
-    // Проверяем существующее значение перед перезаписью.
-    const saved = localStorage.getItem(CLIENTS_STORAGE_KEY)
 
-    if (saved !== null && !Array.isArray(JSON.parse(saved))) {
-      throw new Error('Збережені дані пошкоджені')
+  const loadClients = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Помилка завантаження з Supabase:', error)
+        return
+      }
+
+      if (data && data.length > 0) {
+        const mapped = (data as DatabaseClient[]).map(fromDbClient)
+        setClients(mapped)
+        localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(mapped))
+      }
+    } catch (err) {
+      console.error('Не вдалося зʼєднатися з базою:', err)
     }
+  }, [])
 
-    localStorage.setItem(
-      CLIENTS_STORAGE_KEY,
-      JSON.stringify(clients),
-    )
-  } catch (error) {
-    console.error('Не вдалося зберегти клієнтів:', error)
-    window.alert(
-      'Не вдалося зберегти зміни в браузері. Після оновлення сторінки вони можуть зникнути.',
-    )
-  }
-}, [clients])
+  useEffect(() => {
+    loadClients()
+
+    // Слушаем изменения в базе в реальном времени
+    const channel = supabase
+      .channel('realtime-clients')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'clients' },
+        () => {
+          loadClients()
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [loadClients])
+
   const total = clients.length
   const normalizedQuery = query.trim().toLowerCase()
   const visible = clients.filter(
@@ -147,28 +169,69 @@ useEffect(() => {
     setFilter('all')
   }
 
-  function addClient(values: ClientFormValues) {
+  async function addClient(values: ClientFormValues) {
     const newClient: Client = {
       id: crypto.randomUUID(),
       ...values,
       nextSessionLabel: null,
       status: 'active',
     }
+
+    // Мгновенно отображаем в интерфейсе
     setClients((current) => [newClient, ...current])
-    resetFilters() // чтобы новый клиент не оказался скрыт активным поиском или фильтром
+    resetFilters()
     setIsFormOpen(false)
+
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .insert(toDbClient(newClient))
+
+      if (error) {
+        console.error('Помилка додавання в Supabase:', error)
+        alert('Не вдалося зберегти в базу: ' + error.message)
+        loadClients()
+      } else {
+        setClients((current) => {
+          localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(current))
+          return current
+        })
+      }
+    } catch (err) {
+      console.error('Помилка запиту:', err)
+    }
   }
-  function deleteClient(clientToDelete: Client) {
-  const confirmed = window.confirm(
-    `Видалити клієнта «${clientToDelete.name}»?`,
-  )
 
-  if (!confirmed) return
+  async function deleteClient(clientToDelete: Client) {
+    const confirmed = window.confirm(
+      `Видалити клієнта «${clientToDelete.name}»?`,
+    )
+    if (!confirmed) return
 
-  setClients((current) =>
-    current.filter((client) => client.id !== clientToDelete.id),
-  )
-}
+    setClients((current) =>
+      current.filter((client) => client.id !== clientToDelete.id),
+    )
+
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', clientToDelete.id)
+
+      if (error) {
+        console.error('Помилка видалення в Supabase:', error)
+        alert('Не вдалося видалити з бази: ' + error.message)
+        loadClients()
+      } else {
+        setClients((current) => {
+          localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(current))
+          return current
+        })
+      }
+    } catch (err) {
+      console.error('Помилка запиту:', err)
+    }
+  }
 
   return (
     <div className="page">
@@ -230,10 +293,10 @@ useEffect(() => {
           <ul className="clients">
             {visible.map((client) => (
               <ClientRow
-  key={client.id}
-  client={client}
-  onDelete={deleteClient}
-/>
+                key={client.id}
+                client={client}
+                onDelete={deleteClient}
+              />
             ))}
           </ul>
         </>
