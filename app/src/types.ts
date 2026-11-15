@@ -19,4 +19,5 @@ export type Session = {
   time: string // HH:MM
   dur: number // minutes, e.g. 60
   status: SessionStatus
+  isDeducted?: boolean
 }

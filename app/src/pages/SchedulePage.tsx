@@ -152,6 +152,9 @@ export default function SchedulePage({
             if (isCancelled) {
               badgeClass = 'session-badge--cancelled'
               badgeText = 'Скасовано'
+            } else if (session.isDeducted || session.status === 'completed') {
+              badgeClass = 'session-badge--past'
+              badgeText = 'Минуло · Списано'
             } else if (isPast) {
               badgeClass = 'session-badge--past'
               badgeText = 'Минуло'

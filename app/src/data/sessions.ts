@@ -127,6 +127,17 @@ export function findNextSession(clientId: string, sessions: Session[]): string |
   return `${formatDateShort(next.date)} · ${next.time}`
 }
 
+export function isSessionPast(session: { date: string; time: string; dur: number }): boolean {
+  const now = new Date()
+  const todayIso = toIsoDate(now)
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  const sessionStartMins = timeToMinutes(session.time)
+
+  if (session.date < todayIso) return true
+  if (session.date === todayIso && sessionStartMins + session.dur <= currentMinutes) return true
+  return false
+}
+
 export function createInitialSessions(): Session[] {
   const today = toIsoDate(new Date())
   return [

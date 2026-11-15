@@ -51,6 +51,7 @@ export type DatabaseSession = {
   time: string
   dur: number
   status: SessionStatus
+  is_deducted?: boolean
   created_at?: string
 }
 
@@ -62,6 +63,7 @@ export function fromDbSession(db: DatabaseSession): Session {
     time: db.time,
     dur: Number(db.dur ?? 60),
     status: db.status || 'planned',
+    isDeducted: Boolean(db.is_deducted),
   }
 }
 
@@ -73,5 +75,6 @@ export function toDbSession(session: Partial<Session>) {
   if (session.time !== undefined) row.time = session.time
   if (session.dur !== undefined) row.dur = session.dur
   if (session.status !== undefined) row.status = session.status
+  if (session.isDeducted !== undefined) row.is_deducted = session.isDeducted
   return row
 }

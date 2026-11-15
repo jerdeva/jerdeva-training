@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import type { Client, Session } from '../types'
-import { detectConflict, formatTimeRange } from '../data/sessions'
+import { detectConflict, formatTimeRange, isSessionPast } from '../data/sessions'
+import { pluralUk } from '../data/plural'
 import './ClientForm.css'
 import './SessionForm.css'
 
@@ -65,6 +66,9 @@ export default function SessionForm({
     return () => dialog?.removeEventListener('cancel', handleCancel)
   }, [onCancel])
 
+  const selectedClient = clients.find((c) => c.id === clientId)
+  const isPast = isSessionPast({ date, time, dur })
+
   // Проверка конфликта времени
   const conflictingSession = detectConflict(
     { date, time, dur },
@@ -107,9 +111,16 @@ export default function SessionForm({
     <dialog ref={dialogRef} className="form-dialog" aria-labelledby="session-dialog-title">
       <form className="form-dialog__form" onSubmit={handleSubmit} noValidate>
         <header className="form-dialog__head">
-          <h2 id="session-dialog-title" className="form-dialog__title">
-            {isEditing ? 'Редагувати тренування' : 'Записати на тренування'}
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 id="session-dialog-title" className="form-dialog__title">
+              {isEditing ? 'Редагувати тренування' : 'Записати на тренування'}
+            </h2>
+            {sessionToEdit?.isDeducted && (
+              <span className="count-pill" style={{ fontSize: '11px', padding: '3px 8px' }}>
+                Списано
+              </span>
+            )}
+          </div>
           <button
             type="button"
             className="form-dialog__close"
@@ -139,10 +150,16 @@ export default function SessionForm({
               {clients.length === 0 && <option value="">Немає клієнтів</option>}
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} ({c.sessionsLeft} занять залишилось)
+                  {c.name} (залишок: {c.sessionsLeft}{' '}
+                  {pluralUk(c.sessionsLeft, ['заняття', 'заняття', 'занять'])})
                 </option>
               ))}
             </select>
+            {selectedClient && selectedClient.sessionsLeft <= 0 && (
+              <p className="field__error" style={{ marginTop: '4px' }}>
+                У клієнта 0 оплачених занять. Залишок стане від’ємним або залишиться на 0.
+              </p>
+            )}
           </div>
 
           <div className="field">
@@ -190,6 +207,33 @@ export default function SessionForm({
             </div>
           </div>
 
+          {/* Предупреждение о списании прошедшего занятия */}
+          {isPast && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 14px',
+                borderRadius: 'var(--radius-control)',
+                background: 'var(--color-primary-subtle)',
+                border: '1px solid #8fb3a0',
+                color: 'var(--color-primary)',
+                fontSize: '13px',
+                fontWeight: 600,
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>
+                {sessionToEdit?.isDeducted
+                  ? 'Це заняття вже минуло і списано з балансу клієнта.'
+                  : 'Заняття в минулому: при збереженні 1 тренування спишеться з балансу клієнта.'}
+              </span>
+            </div>
+          )}
+
           {conflictingSession && (
             <div className="conflict-warning" role="alert">
               <svg className="conflict-warning__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -215,7 +259,11 @@ export default function SessionForm({
               className="btn-secondary"
               onClick={() => onToggleStatus(sessionToEdit)}
             >
-              {sessionToEdit.status === 'cancelled' ? 'Відновити' : 'Скасувати'}
+              {sessionToEdit.status === 'cancelled'
+                ? 'Відновити'
+                : sessionToEdit.isDeducted
+                  ? 'Скасувати (повернути 1 заняття)'
+                  : 'Скасувати заняття'}
             </button>
           )}
 

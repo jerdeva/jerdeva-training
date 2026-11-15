@@ -6,7 +6,7 @@ import SchedulePage from './pages/SchedulePage'
 import type { ClientFormValues } from './components/ClientForm'
 import type { Client, Session, SessionStatus } from './types'
 import { clients as initialClients } from './data/clients'
-import { createInitialSessions, findNextSession } from './data/sessions'
+import { createInitialSessions, findNextSession, isSessionPast } from './data/sessions'
 import {
   supabase,
   fromDbClient,
@@ -51,6 +51,32 @@ export default function App() {
     return createInitialSessions()
   })
 
+  // Изменение баланса оплаченных тренировок клиента (+1 или -1)
+  const changeClientBalance = useCallback(async (clientId: string, delta: number) => {
+    let updatedBalance = 0
+    setClients((curr) => {
+      const next = curr.map((c) => {
+        if (c.id === clientId) {
+          updatedBalance = Math.max(0, c.sessionsLeft + delta)
+          return { ...c, sessionsLeft: updatedBalance }
+        }
+        return c
+      })
+      localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(next))
+      return next
+    })
+
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ sessions_left: updatedBalance })
+        .eq('id', clientId)
+      if (error) console.error('Помилка оновлення залишку в Supabase:', error)
+    } catch (err) {
+      console.error('Помилка Supabase:', err)
+    }
+  }, [])
+
   // Загрузка клиентов из Supabase
   const loadClients = useCallback(async () => {
     try {
@@ -83,8 +109,7 @@ export default function App() {
         .order('date', { ascending: true })
 
       if (error) {
-        // Если таблицы еще нет в Supabase, остаемся на локальных данных
-        console.warn('Заняття завантажено з локального стану (таблиця в Supabase ще створюється):', error.message)
+        console.warn('Заняття завантажено з локального стану:', error.message)
         return
       }
 
@@ -197,15 +222,50 @@ export default function App() {
     time: string
     dur: number
   }) {
+    const isPast = isSessionPast(values)
+
     if (values.id) {
       // Редактирование существующего
       const sessionId = values.id
+      const existing = sessions.find((s) => s.id === sessionId)
+      if (!existing) return
+
+      let nextDeducted = Boolean(existing.isDeducted)
+
+      if (existing.clientId !== values.clientId) {
+        // Клиент изменился: возвращаем старому, если было списано, и списываем у нового
+        if (existing.isDeducted) {
+          changeClientBalance(existing.clientId, +1)
+        }
+        if (isPast && existing.status !== 'cancelled') {
+          changeClientBalance(values.clientId, -1)
+          nextDeducted = true
+        } else {
+          nextDeducted = false
+        }
+      } else {
+        // Тот же клиент: проверяем перенос даты/времени
+        if (!existing.isDeducted && isPast && existing.status !== 'cancelled') {
+          changeClientBalance(values.clientId, -1)
+          nextDeducted = true
+        } else if (existing.isDeducted && !isPast) {
+          changeClientBalance(values.clientId, +1)
+          nextDeducted = false
+        }
+      }
+
+      const updatedSession: Session = {
+        ...existing,
+        clientId: values.clientId,
+        date: values.date,
+        time: values.time,
+        dur: values.dur,
+        isDeducted: nextDeducted,
+        status: nextDeducted ? 'completed' : (existing.status === 'completed' ? 'planned' : existing.status),
+      }
+
       setSessions((curr) => {
-        const next = curr.map((s) =>
-          s.id === sessionId
-            ? { ...s, clientId: values.clientId, date: values.date, time: values.time, dur: values.dur }
-            : s,
-        )
+        const next = curr.map((s) => (s.id === sessionId ? updatedSession : s))
         localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(next))
         return next
       })
@@ -213,21 +273,24 @@ export default function App() {
       try {
         const { error } = await supabase
           .from('sessions')
-          .update(toDbSession(values))
+          .update(toDbSession(updatedSession))
           .eq('id', sessionId)
         if (error) console.error('Помилка оновлення тренування в базі:', error)
       } catch (err) {
         console.error('Помилка Supabase:', err)
       }
     } else {
-      // Создание нового
+      // Создание нового занятия
+      const shouldDeduct = isPast
+
       const newSession: Session = {
         id: crypto.randomUUID(),
         clientId: values.clientId,
         date: values.date,
         time: values.time,
         dur: values.dur,
-        status: 'planned',
+        status: shouldDeduct ? 'completed' : 'planned',
+        isDeducted: shouldDeduct,
       }
 
       setSessions((curr) => {
@@ -235,6 +298,11 @@ export default function App() {
         localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(next))
         return next
       })
+
+      // Если дата в прошлом — автоматически списываем 1 тренировку у клиента!
+      if (shouldDeduct) {
+        changeClientBalance(values.clientId, -1)
+      }
 
       try {
         const { error } = await supabase
@@ -249,10 +317,34 @@ export default function App() {
 
   // Изменение статуса занятия (скасувати / відновити)
   async function handleToggleSessionStatus(session: Session) {
-    const nextStatus: SessionStatus =
-      session.status === 'cancelled' ? 'planned' : 'cancelled'
+    const isNowCancelled = session.status !== 'cancelled'
+    const nextStatus: SessionStatus = isNowCancelled ? 'cancelled' : 'planned'
+
+    let nextDeducted = Boolean(session.isDeducted)
+
+    if (isNowCancelled) {
+      // Отменяем занятие: если оно было списано, возвращаем 1 занятие клиенту!
+      if (session.isDeducted) {
+        changeClientBalance(session.clientId, +1)
+        nextDeducted = false
+      }
+    } else {
+      // Восстанавливаем занятие: если оно в прошлом, списываем 1 занятие!
+      const isPast = isSessionPast(session)
+      if (isPast) {
+        changeClientBalance(session.clientId, -1)
+        nextDeducted = true
+      }
+    }
+
+    const updatedSession: Session = {
+      ...session,
+      status: nextStatus,
+      isDeducted: nextDeducted,
+    }
+
     setSessions((curr) => {
-      const next = curr.map((s) => (s.id === session.id ? { ...s, status: nextStatus } : s))
+      const next = curr.map((s) => (s.id === session.id ? updatedSession : s))
       localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(next))
       return next
     })
@@ -260,7 +352,7 @@ export default function App() {
     try {
       const { error } = await supabase
         .from('sessions')
-        .update({ status: nextStatus })
+        .update(toDbSession(updatedSession))
         .eq('id', session.id)
       if (error) console.error('Помилка оновлення статусу в базі:', error)
     } catch (err) {
@@ -270,8 +362,16 @@ export default function App() {
 
   // Удаление занятия
   async function handleDeleteSession(id: string) {
+    const existing = sessions.find((s) => s.id === id)
+    if (!existing) return
+
     const confirmed = window.confirm('Видалити це тренування з розкладу?')
     if (!confirmed) return
+
+    // Если тренировка была списана, возвращаем её клиенту!
+    if (existing.isDeducted) {
+      changeClientBalance(existing.clientId, +1)
+    }
 
     setSessions((curr) => {
       const next = curr.filter((s) => s.id !== id)
